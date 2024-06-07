@@ -13,30 +13,20 @@
     Returns:
         _type_: _description_
     """
-
-
-# Listado con librerias necesarias
+# Libraries
 import requests
 import json
 import seaborn as sns
 import pandas as pd
 from datetime import datetime, timezone
-
 import matplotlib.pyplot as plt
-# %matplotlib inline
-
 
 indicadores = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc",
                "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
 
-# POR PROGRAMAR:
-# Convertirlo en una API que pueda llamar los metodos
-# Crear tambien procesos y una API en SQL que me permita registrar mis compras personales en una base de datos.
-# Buscar tambien una porcion de codigo que me permita borrar todos los temporales o archivos generados.
-
-######################################################################################################
-# FUNCION 1 DEL BOT: OBTIENE EL VALOR PARA EL DIA DE HOY DE LOS INDICADORES QUE PUEDE CONSULTAR LA API
-######################################################################################################
+########
+# BASE #
+########
 
 
 def obtenerIndicadores():
@@ -45,36 +35,6 @@ def obtenerIndicadores():
     response = requests.get(url)
     data = json.loads(response.text.encode("utf-8"))
     return data
-
-
-# Se genera una lista con indicadores para iterar (Es mucho mas rapido)
-json_data = obtenerIndicadores()
-
-# Muestra todos los indicadores rescatados de la consulta formateados de forma facil de leer
-print("Los valores son mostrados a la fecha: " + json_data['fecha'][:10])
-
-# Itera y muestra los indicadores
-for indicador in indicadores:
-    if (json_data[indicador]['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
-        print("El valor de " + json_data[indicador]['nombre'] + " corresponde a " +
-              str((json_data[indicador]['valor'])) + " %")
-    elif (json_data[indicador]['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)')):
-        print("El valor de " + json_data[indicador]['nombre'] + " corresponde a " +
-              "$ "+str('{:,}'.format(json_data[indicador]['valor']).replace(',', '.')) + " " + json_data[indicador]['unidad_medida'])
-    else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
-        print("El valor de " + json_data[indicador]['nombre'] + " corresponde a " +
-              "U$ "+str(json_data[indicador]['valor']) + " " + json_data[indicador]['unidad_medida'])
-        if indicador == 'bitcoin':  # Se entrega el valor de BTC en PESOS
-            print("El valor de " + json_data[indicador]['nombre'] + " corresponde a " +
-                  "$ "+str('{:,}'.format(int(json_data[indicador]['valor']*json_data['dolar']['valor'])).replace(',', '.')) + " " + json_data['dolar']['unidad_medida'] + " App.")
-
-
-#######################################################################################################
-
-#######################################################################################################
-# ----------------------------------SEGUNDA FUNCION DEL BOT
-#######################################################################################################
-# ENTREGA LA INFORMACION CORRESPONDIENTE A 30 DIAS HACIA ATRAS DADO UN INDICADOR ESPECIFICO.
 
 
 def obtenerIndicador(indicador):  # RETORNA UN DICCIONARIO
@@ -87,36 +47,104 @@ def obtenerIndicador(indicador):  # RETORNA UN DICCIONARIO
     return data
 
 
-# info_indicador = pd.DataFrame(data =obtenerIndicador("uf").items(), columns = [])
-info_indicador = obtenerIndicador("uf")
+def obtenerIndicadorFecha(tipo_indicador, fecha):
+    url = f'https://mindicador.cl/api/{tipo_indicador}/{fecha}'
+    response = requests.get(url)
+    data = json.loads(json.dumps(json.loads(
+        response.text.encode("utf-8")), indent=2))
+    # Para que el json se vea ordenado, retornar pretty_json
+    # pretty_json = json.dumps(data, indent=2)
+    return data
 
-# Obtiene nombre del indicador consultado
-nombre = info_indicador['nombre']  # el label a obtener es nombre
-unidad_medida = info_indicador['unidad_medida']
 
-# print(nombre)
-# print(unidad_medida)
+def obtenerIndicadorAño(tipo_indicador, anio):
+    url = f'https://mindicador.cl/api/{tipo_indicador}/{anio}'
+    response = requests.get(url)
+    data = json.loads(json.dumps(json.loads(
+        response.text.encode("utf-8")), indent=2))
+    # Para que el json se vea ordenado, retornar pretty_json
+    # pretty_json = json.dumps(data, indent=2)
+    return data
 
-# Obtiene el valor diario con el timestamp de los ultimos 30 dias
-serie = pd.DataFrame(info_indicador['serie'])
-# Convierte la fecha en timestamp y añade las medidas necesarias para graficar.
-serie['fecha'] = pd.to_datetime(serie["fecha"])
-serie['mes'] = serie["fecha"].dt.month
-serie['año'] = serie["fecha"].dt.year
-serie['dia'] = serie["fecha"].dt.day
+######################################################################################################
+# FUNCION 1 DEL BOT: OBTIENE EL VALOR PARA EL DIA DE HOY DE LOS INDICADORES QUE PUEDE CONSULTAR LA API
+######################################################################################################
 
-# IMPRIME EL DF CON LA FECHA EL PRIMER DIA
-print(serie)
 
-# Generacion del grafico
-# Proceso de formateo del grafico
-sns.lineplot(serie, x=serie['dia'].sort_values(), y=serie['valor'])
-# Añadir luego las fechas que se consideran
-plt.suptitle("Valor en " + unidad_medida + " de Ult. 30 Dias " + nombre)
-plt.ylabel("Valor en " + str(unidad_medida))
-plt.xlabel("Dia del mes")
-# Se muestra el grafico
-plt.show()
+def indicadoresDiarios():
+
+    indicadores = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc",
+                   "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
+
+    # Se genera una lista con indicadores para iterar (Es mucho mas rapido)
+    json_data = obtenerIndicadores()
+    texto = []  # Concatenacion de las respuestas de la API
+    mystring = ' '  # Creacion del texto para el mensaje.
+
+    # Muestra todos los indicadores rescatados de la consulta formateados de forma facil de leer
+    # print("Los valores son mostrados a la fecha: " + json_data['fecha'][:10])
+    texto.append("Los valores son mostrados a la fecha: " +
+                 json_data['fecha'][:10])
+
+    # Itera y muestra los indicadores
+    for indicador in indicadores:
+        if (json_data[indicador]['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
+            texto.append("El valor de " + json_data[indicador]['nombre'] +
+                         " corresponde a " + str((json_data[indicador]['valor'])) + " %")
+        elif (json_data[indicador]['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)')):
+            texto.append("El valor de " + json_data[indicador]['nombre'] + " corresponde a " + "$ "+str('{:,}'.format(
+                json_data[indicador]['valor']).replace(',', '.')) + " " + json_data[indicador]['unidad_medida'])
+        else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
+            if indicador == 'bitcoin':  # Se entrega el valor de BTC en PESOS
+                texto.append("El valor de " + json_data[indicador]['nombre'] + " corresponde a " + "$ "+str('{:,}'.format(int(
+                    json_data[indicador]['valor']*json_data['dolar']['valor'])).replace(',', '.')) + " " + json_data['dolar']['unidad_medida'] + " App.")
+            texto.append("El valor de " + json_data[indicador]['nombre'] + " corresponde a " + "U$ "+str(
+                json_data[indicador]['valor']) + " " + json_data[indicador]['unidad_medida'])
+
+    # Crea el mensaje
+    for x in texto:
+        mystring += ' \n' + x
+
+    return mystring
+#######################################################################################################
+
+#######################################################################################################
+# ----------------------------------SEGUNDA FUNCION DEL BOT
+#######################################################################################################
+# ENTREGA LA INFORMACION CORRESPONDIENTE A 30 DIAS HACIA ATRAS DADO UN INDICADOR ESPECIFICO.
+
+
+def ultimoMesIndicador(indicador):
+
+    # indicador = "uf"  # ESTE VALOR SE INGRESA DESDE EL TELEGRAM
+
+    info_indicador = obtenerIndicador(indicador)  # Consulta
+
+    # Obtiene nombre del indicador consultado
+    nombre = info_indicador['nombre']  # el label a obtener es nombre
+    unidad_medida = info_indicador['unidad_medida']
+
+    # Obtiene el valor diario con el timestamp de los ultimos 30 dias
+    serie = pd.DataFrame(info_indicador['serie'])
+    # Convierte la fecha en timestamp y añade las medidas necesarias para graficar.
+    serie['fecha'] = pd.to_datetime(serie["fecha"])
+    serie['dia'] = serie["fecha"].dt.day
+
+    # serie['mes'] = serie["fecha"].dt.month
+    # serie['año'] = serie["fecha"].dt.year
+
+    # IMPRIME EL DF CON LA FECHA EL PRIMER DIA
+    # print(serie)
+
+    # Generacion del grafico
+    # Proceso de formateo del grafico
+    sns.lineplot(serie, x=serie['dia'].sort_values(), y=serie['valor'])
+    # Añadir luego las fechas que se consideran
+    plt.suptitle("Valor en " + unidad_medida + " de Ult. 30 Dias " + nombre)
+    plt.ylabel("Valor en " + str(unidad_medida))
+    plt.xlabel("Dia del mes")
+    # Se muestra el grafico
+    return plt.show()
 
 
 # PUNTOS A CONSIDERAR PARA PROGRAMAR
@@ -134,40 +162,55 @@ plt.show()
 # --------------------- TERCERA FUNCION DEL BOT -----------------------------
 #######################################################################################################
 
-fecha = "17-12-2012"  # DEBE IR EN ESTE FORMATO
-tipo_indicador = "bitcoin"
+def obtenerIndicadorxFecha(fecha, tipo_indicador):
 
+    # fecha = "17-12-2012"  # DEBE IR EN ESTE FORMATO
+    # tipo_indicador = "bitcoin"
 
-def obtenerIndicadorFecha(tipo_indicador, fecha):
-    url = f'https://mindicador.cl/api/{tipo_indicador}/{fecha}'
-    response = requests.get(url)
-    data = json.loads(json.dumps(json.loads(
-        response.text.encode("utf-8")), indent=2))
-    # Para que el json se vea ordenado, retornar pretty_json
-    # pretty_json = json.dumps(data, indent=2)
-    return data
+    # Falta el print formateado de esta funcion
+    # print(obtenerIndicadorFecha(tipo_indicador, fecha))
+    # Falta añadir la fecha a la  funcion
 
-
-# print(obtenerIndicadorFecha(tipo_indicador, fecha))
+    if (obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
+        return print("El valor de " + obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] + " corresponde a " +
+                     str(obtenerIndicadorFecha(tipo_indicador, fecha)['serie'][0]['valor']) + " %")
+    elif obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)'):
+        return print("El valor de " + obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] + " corresponde a " +
+                     "$ "+str('{:,}'.format(obtenerIndicadorFecha(tipo_indicador, fecha)['serie'][0]['valor']).replace(',', '.')) + " " + obtenerIndicadorFecha(tipo_indicador, fecha)['unidad_medida'])
+    else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
+        # Si el atributo serie viene vacio, entonces sale del a funcion en caso contrario lo imprime.
+        if obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] == 'Bitcoin' and not obtenerIndicadorFecha(tipo_indicador, fecha)['serie']:
+            return print("El valor de " + obtenerIndicadorFecha(tipo_indicador, fecha)
+                         ['nombre'] + " no tiene registro para la fecha consultada")
+        else:
+            return print("El valor de " + obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] + " corresponde a " +
+                         "U$ "+str(obtenerIndicadorFecha(tipo_indicador, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(tipo_indicador, fecha)['unidad_medida'])
 
 # # LA MISMA FUNCION PERO ITERABLE
 
-print("La fecha consultada para el valor de los indicadores es: " + fecha)
 
-for label in indicadores:
-    if (obtenerIndicadorFecha(label, fecha)['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
-        print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-              str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " %")
-    elif obtenerIndicadorFecha(label, fecha)['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)'):
-        print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-              "$ "+str('{:,}'.format(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']).replace(',', '.')) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
-    else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
-        # Si el atributo serie viene vacio, entonces sale del a funcion en caso contrario lo imprime.
-        if obtenerIndicadorFecha(label, fecha)['nombre'] == 'Bitcoin' and not obtenerIndicadorFecha(label, fecha)['serie']:
-            break
-        else:
-            print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-                  "U$ "+str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
+def obtenerIndicadoresXFecha(fecha):
+
+    # fecha = "17-12-2012"  # DEBE IR EN ESTE FORMATO
+    indicadores = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc",
+                   "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
+
+    print("La fecha consultada para el valor de los indicadores es: " + fecha)
+
+    for label in indicadores:
+        if (obtenerIndicadorFecha(label, fecha)['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
+            return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
+                         str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " %")
+        elif obtenerIndicadorFecha(label, fecha)['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)'):
+            return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
+                         "$ "+str('{:,}'.format(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']).replace(',', '.')) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
+        else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
+            # Si el atributo serie viene vacio, entonces sale del a funcion en caso contrario lo imprime.
+            if obtenerIndicadorFecha(label, fecha)['nombre'] == 'Bitcoin' and not obtenerIndicadorFecha(label, fecha)['serie']:
+                break
+            else:
+                return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
+                             "U$ "+str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
 
 # # COSAS PENDIENTES
 # # EL INGRESO DE LA VARIABLE DEBE VENIR DESDE EL MENSAJE DEL TELEGRAM (HACER TAMBIEN LA VERSION DE INGRESO POR CONSOLA DE PYTHON)
@@ -180,53 +223,42 @@ for label in indicadores:
 # ------------------------------------- CUARTA FUNCION DEL BOT  ---------------------------------------
 #######################################################################################################
 
-tipo_indicador = "uf"
-anio = '1989'
 
-# Obtiene los valores del indicador un año determinado.
+def obtenerIndicadorXAño(año, tipo_indicador):
 
-# Considerar tambien las validaciones de los activos que no tienen valor un año determinado
+    # tipo_indicador = "uf"
+    # año = '1989'
+    # Considerar tambien las validaciones de los activos que no tienen valor un año determinado
 
+    # Obtiene la informacion del indicador
+    info_indicador = obtenerIndicadorAño(tipo_indicador, año)
 
-def obtenerIndicadorAño(tipo_indicador, anio):
-    url = f'https://mindicador.cl/api/{tipo_indicador}/{anio}'
-    response = requests.get(url)
-    data = json.loads(json.dumps(json.loads(
-        response.text.encode("utf-8")), indent=2))
-    # Para que el json se vea ordenado, retornar pretty_json
-    # pretty_json = json.dumps(data, indent=2)
-    return data
+    # Guarda el nombre y la unidad de medida del indicador
+    nombre = info_indicador['nombre']
+    unidad_medida = info_indicador['unidad_medida']
 
+    # print(nombre)
+    # print(unidad_medida)
 
-# Obtiene la informacion del indicador
-info_indicador = obtenerIndicadorAño(tipo_indicador, anio)
+    # Obtiene el valor diario con el timestamp de los ultimos 30 dias
+    serie = pd.DataFrame(info_indicador['serie'])
+    # Convierte la fecha en timestamp y añade las medidas necesarias para graficar.
+    serie['fecha'] = pd.to_datetime(serie["fecha"])
+    # Se ordena el DF
+    serie = serie.sort_values('fecha')
 
-# Guarda el nombre y la unidad de medida del indicador
-nombre = info_indicador['nombre']
-unidad_medida = info_indicador['unidad_medida']
+    # IMPRIME EL DF CON LA FECHA EL PRIMER DIA
+    # print(serie.sort_values('fecha'))
 
-# print(nombre)
-# print(unidad_medida)
+    # Generacion del grafico
+    sns.lineplot(serie, x=serie['fecha'], y=serie['valor'])
+    # Formato de la visualizacion
+    plt.suptitle("Valor en " + unidad_medida + " del Ult. año de " + nombre)
+    plt.ylabel("Valor en " + str(unidad_medida))
+    plt.xlabel("Año mes")
 
-# Obtiene el valor diario con el timestamp de los ultimos 30 dias
-serie = pd.DataFrame(info_indicador['serie'])
-# Convierte la fecha en timestamp y añade las medidas necesarias para graficar.
-serie['fecha'] = pd.to_datetime(serie["fecha"])
-# Se ordena el DF
-serie = serie.sort_values('fecha')
-
-# IMPRIME EL DF CON LA FECHA EL PRIMER DIA
-# print(serie.sort_values('fecha'))
-
-# Generacion del grafico
-sns.lineplot(serie, x=serie['fecha'], y=serie['valor'])
-# Formato de la visualizacion
-plt.suptitle("Valor en " + unidad_medida + " del Ult. año " + nombre)
-plt.ylabel("Valor en " + str(unidad_medida))
-plt.xlabel("Año mes")
-
-# # Se muestra el grafico
-plt.show()
+    # # Se muestra el grafico
+    return plt.show()
 
 # Cosas que faltan formatear
 # Retornar la foto en el mensaje que vuelve hacia el telegram.
