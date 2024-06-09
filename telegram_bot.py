@@ -19,7 +19,7 @@ from typing import Final
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from dotenv import load_dotenv, dotenv_values
-from app import indicadoresDiarios
+from app import indicadoresDiarios, obtenerIndicadoresXFecha
 
 config = load_dotenv(
     r'D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\variables.env')
@@ -78,13 +78,19 @@ def handle_response(text: str) -> str:
         return 'I am good!'
     if 'I love Python!' in processed:
         return 'Me too!'
+    # DE AQUI EN ADELANTE VOY A IR PROBANDO Y PROGRAMANDO DIFERENTES FUNCIONES
     if '1' in processed:
         return indicadoresDiarios()
+    if '3' in processed:
+        # Hay que hacer dinamico el indicador como (?)
+        return obtenerIndicadoresXFecha("17-12-2020")
+
     return '''Elige alguna de las siguientes opciones para ejecutar:
     1- Valor de los activos chilenos hoy.
     2- Valor de un indicador los ultimos 30 dias.(En desarrollo)
     3- Valor de un indicador(es) para una fecha en especifico (posterior a 1980, excepto bitcoin) (En desarrollo)
     4- Valor del ultimo año de un indicador. (En desarrollo)
+    Puedes consultar mas sobre las funciones en los comandos disponibles en el menú
     '''
 
 

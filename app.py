@@ -101,7 +101,7 @@ def indicadoresDiarios():
             texto.append("El valor de " + json_data[indicador]['nombre'] + " corresponde a " + "U$ "+str(
                 json_data[indicador]['valor']) + " " + json_data[indicador]['unidad_medida'])
 
-    # Crea el mensaje
+    # CREA EL MENSAJE PARA TELEGRAM
     for x in texto:
         mystring += ' \n' + x
 
@@ -144,7 +144,8 @@ def ultimoMesIndicador(indicador):
     plt.ylabel("Valor en " + str(unidad_medida))
     plt.xlabel("Dia del mes")
     # Se muestra el grafico
-    return plt.show()
+
+    return plt.savefig(r'D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\foo.png')
 
 
 # PUNTOS A CONSIDERAR PARA PROGRAMAR
@@ -191,26 +192,44 @@ def obtenerIndicadorxFecha(fecha, tipo_indicador):
 
 def obtenerIndicadoresXFecha(fecha):
 
-    # fecha = "17-12-2012"  # DEBE IR EN ESTE FORMATO
+    # fecha = "17-12-2012"  # DEBE IR EN ESTE FORMATO FALTA QUE ESTE VALOR VENGA DESDE TELEGRAM
     indicadores = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc",
                    "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
 
-    print("La fecha consultada para el valor de los indicadores es: " + fecha)
+    # Variables para obtener el mensaje de telegram
+    text = []  # Concatenacion de las respuestas de la API
+    mystring = ' '  # Creacion del texto para el mensaje.
+
+    text.append(
+        "La fecha consultada para el valor de los indicadores es: " + fecha)
+    # print("La fecha consultada para el valor de los indicadores es: " + fecha)
 
     for label in indicadores:
         if (obtenerIndicadorFecha(label, fecha)['nombre'] in ('Indice de Precios al Consumidor (IPC)', 'Imacec', 'Tasa de desempleo', 'Tasa Política Monetaria (TPM)')):
-            return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-                         str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " %")
+            text.append("El valor de " + str(obtenerIndicadorFecha(label, fecha)['nombre']) + " corresponde a " +
+                        str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " %")
         elif obtenerIndicadorFecha(label, fecha)['nombre'] in ('Unidad de fomento (UF)', 'Indice de valor promedio (IVP)', 'Dólar observado', 'Dólar acuerdo', 'Euro', 'Unidad Tributaria Mensual (UTM)'):
-            return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-                         "$ "+str('{:,}'.format(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']).replace(',', '.')) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
+            if not obtenerIndicadorFecha(label, fecha)['serie']:
+                continue  # Si el indicador no trae valores continua con el siguiente indicador
+            else:
+                text.append("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a $ " + str('{:,}'.format(
+                    obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']).replace(',', '.')) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
+            # texto.append("El valor de " + str(obtenerIndicadorFecha(label, fecha)['nombre']) + " corresponde a $ " + str('{:,}'.format(
+            # int(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor'])).replace(',', '.')) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
         else:  # SON TODOS LOS INDICADORES CON VALOR EN DOLAR
             # Si el atributo serie viene vacio, entonces sale del a funcion en caso contrario lo imprime.
             if obtenerIndicadorFecha(label, fecha)['nombre'] == 'Bitcoin' and not obtenerIndicadorFecha(label, fecha)['serie']:
                 break
             else:
-                return print("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
-                             "U$ "+str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(label, fecha)['unidad_medida'])
+                text.append("El valor de " + obtenerIndicadorFecha(label, fecha)['nombre'] + " corresponde a " +
+                            "U$ "+str(obtenerIndicadorFecha(label, fecha)['serie'][0]['valor']) + " " + str(obtenerIndicadorFecha(label, fecha)['unidad_medida']))
+
+    # CREA EL MENSAJE PARA TELEGRAM
+    for x in text:
+        mystring += ' \n' + x
+
+    print(mystring)
+    return mystring
 
 # # COSAS PENDIENTES
 # # EL INGRESO DE LA VARIABLE DEBE VENIR DESDE EL MENSAJE DEL TELEGRAM (HACER TAMBIEN LA VERSION DE INGRESO POR CONSOLA DE PYTHON)
