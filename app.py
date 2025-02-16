@@ -187,6 +187,7 @@ def obtenerIndicadorxFecha(fecha, tipo_indicador):
             return print("El valor de " + obtenerIndicadorFecha(tipo_indicador, fecha)['nombre'] + " corresponde a " +
                          "U$ "+str(obtenerIndicadorFecha(tipo_indicador, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(tipo_indicador, fecha)['unidad_medida'])
 
+
 # # LA MISMA FUNCION PERO ITERABLE
 
 
@@ -201,7 +202,7 @@ def obtenerIndicadoresXFecha(fecha):
     mystring = ' '  # Creacion del texto para el mensaje.
 
     text.append(
-        "La fecha consultada para el valor de los indicadores es: " + fecha)
+        "La fecha consultada para el valor de los indicadores es: " + str(fecha))
     # print("La fecha consultada para el valor de los indicadores es: " + fecha)
 
     for label in indicadores:
