@@ -1,7 +1,8 @@
 ___
 <img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
      width="30" 
-     height="30">## **Implementación Bot Telegram Indicadores Chilenos** 
+     height="30">
+## **Implementación Bot Telegram Indicadores Chilenos** 
 __
 ESTE SCRIPT ES UNA IMPLEMENTACION SIMPLE DE LA API ALOJADA EN https://mindicador.cl/
 ____
