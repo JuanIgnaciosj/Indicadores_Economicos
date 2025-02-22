@@ -5,7 +5,7 @@
     -- EN DESARROLLO --
     LA IMPLEMENTACION CONSIDERA 4 FUNCIONES GENERALES:
         - CONSULTA DEL VALOR ACTUAL DE LOS TODOS LOS INDICADORES DISPONIBLES, SEGUN LA WEB DE https://mindicador.cl/
-        - CONSULTA EL VALOR DE LOS ULTIMOS 30 DIAS, DE UN ACTIVO DETERMINADO. RETORNA UNA IMAGEN CON UN GRAFICO DEL INDICADOR. 
+        - CONSULTA EL VALOR DE LOS ULTIMOS 30 DIAS, DE UN ACTIVO DETERMINADO. RETORNA UNA IMAGEN CON UN GRAFICO DEL INDICADOR.
         - CONSULTA EL VALOR DE LOS INDICADORES PARA UNA FECHA EN ESPECIFICO. TAMBIEN LA FUNCION SE ENCUENTRA EN DISPONIBLE PARA CONSULTAR CON UN SOLO INDICADOR, EN UNA FECHA EN ESPECIFICO.
         - CONSULTA EL VALOR DE UN INDICADOR PARA UN AÑO EN ESPECIFICO. RETORNA UNA IMAGEN CON EL GRAFICO DEL COMPORTAMIENTO PARA ESE AÑO.
         - LOS INDICADORES DISPONIBLES SON: ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc","utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]. PARA MAS DETALLE CONSULTAR mindicador.cl
@@ -22,7 +22,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, Updater
 from dotenv import load_dotenv, dotenv_values
 from datetime import datetime
-from app import indicadoresDiarios, obtenerIndicadoresXFecha
+from app import indicadoresDiarios, obtenerIndicadoresXFecha, ultimoMesIndicador, obtenerIndicadorXAño
 
 config = load_dotenv(
     r'D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\variables.env')
@@ -33,19 +33,20 @@ config = dotenv_values('examples.env')
 TOKEN = os.getenv('TOKEN')  # LOGIN TOKEN
 BOT_USERNAME: Final = os.getenv('BOTUSERNAME')  # NOMBRE DEL BOT
 
-
 # Aqui se programan los comandos que se desplegan en el menu
 # Consulta
 
 # Este es el texto que recibe cuando comienzas a interactuar con el bot
+
+
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('''Hola! Soy Fintualbot, un asistente que te entrega las estadisticas mas importantes sonbre los indicadores macroeconomicos de chile (estos corresponden a: uf, ivp, dolar, dolar_intercambio, euro, ipc,utm, imacec, tpm, libra_cobre, tasa_desempleo, bitcoin).\n 
-    La API se basa en una implementacion simplificada y user friendly de miindicador.cl.\n 
+    await update.message.reply_text('''Hola! Soy Fintualbot, un asistente que te entrega las estadisticas mas importantes sonbre los indicadores macroeconomicos de chile (estos corresponden a: uf, ivp, dolar, dolar_intercambio, euro, ipc,utm, imacec, tpm, libra_cobre, tasa_desempleo, bitcoin).\n
+    La API se basa en una implementacion simplificada y user friendly de miindicador.cl.\n
     Su uso simplemente se basa en las funciones listadas a continuacion, para hacer uso de ellas, solo debes seleccionar el numero y seguir las instrucciones:
-    (1) Consulta el valor diario de los activos/indicadores mas importantes de la economia chilena. \n (OK)
-    (2) Consulta el valor de un indicador durante los ultimos 30 dias o ultimo mes y entrega un grafico con el resultado. \n (En desarrollo)
-    (3) Consulta (uno/varios indicadores para un mismo valor de fecha) (posterior a 1980, excepto bitcoin). \n (En desarrollo: Revisar que pasa con el valor de btc)
-    (5) Consulta el valor de un año de un indicador especifico. Retorna un grafico mostrando su comportamiento.\n (En desarrollo)
+    (1) Consulta el valor al día de hoy de los activos/indicadores mas importantes de la economia chilena. \n *(OK)*
+    (2) Consulta el valor de un indicador durante los ultimos 30 dias y entrega un grafico con el comportamiento.\n 
+    (3) Consulta el valor de los indicadores para una fecha en especfico. (posterior a 1980, excepto bitcoin). \n 
+    (4) Consulta el valor de un año de un indicador especifico. Retorna un grafico mostrando su comportamiento.\n 
     ''')
 # Si quieres aportar con el desarrollo de la plataforma puedes donar a continuación: DIRECCION BTC
 
@@ -75,22 +76,41 @@ async def valorXFecha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # await update.message.reply_text('La fecha ingresada no es valida u ocurrio otro error.')
 
 
-async def custom_command2(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Aqui puedes agregar las funciones que deben salir desde la API')
+async def Ult30DIndicador(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    indicador = str(context.args[0])  # obtiene el indicador
+    file = ultimoMesIndicador(indicador)
+    with open(file, 'rb') as photo:
+        await context.bot.send_photo(chat_id=update.message.chat.id, photo=photo)
+
+    # Eliminar el archivo después de enviarlo
+    if os.path.exists(file):
+        os.remove(file)
+
+
+async def UltimoAnoIndicador(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    ano = str(context.args[0])  # obtiene año
+    indicador = str(context.args[1])  # otiene año
+    file = obtenerIndicadorXAño(ano, indicador)
+    with open(file, 'rb') as photo:
+        await context.bot.send_photo(chat_id=update.message.chat.id, photo=photo)
+
+    # Eliminar el archivo después de enviarlo
+    if os.path.exists(file):
+        os.remove(file)
 
 
 # Responses
-
-
 # Aqui maneja las respuestas cuanto se recibe un mensaje
 # Aqui tengo que hacer o mandar a llamar las ejecuciones del bot
+
+
 def handle_response(text: str) -> str:
     processed: str = text.lower()
-    if 'Hola' in processed:
+    if 'hola' in processed:
         return 'Hola Bienvenido!'
-    if 'Como estas?' in processed:
+    if ('como estas?' or 'cómo estás?') in processed:
         return 'Estoy bien!'
-    if 'Donde estoy?!' in processed:
+    if 'donde estoy?' in processed:
         return 'Soy un boot que te permite obtener la principal informacion financiera de Chile!'
 
     ######################################################################################
@@ -100,11 +120,11 @@ def handle_response(text: str) -> str:
         # Devuelve un String con la informacion de los indicadores diarios al ultimo dia habil.
         return indicadoresDiarios()
     if '2' in processed:
-        return 'Aqui no hay nada aun'
+        return 'Para obtener el gráfico de los indicadores en la fecha deseada escribe lo siguiente /command4 "Simbolo" (Con el valor del indicador).'
     if '3' in processed:
-        return 'Para obtener el valor de los indicadores en la fecha deseada escribe lo siguiente /valorXFecha "DD-MM-YYY" (Con el valor del dia a consultar).'
+        return 'Para obtener el valor de los indicadores en la fecha deseada escribe lo siguiente /command5 "DD-MM-YYYY" (Con el valor del dia a consultar).'
     if '4' in processed:
-        return 'Aqui no hay nada aun.'
+        return 'Para obtener el gráfico de los indicadores en la fecha deseada escribe lo siguiente /command6 "YYYY" "Simbolo" (Con el valor del año e indicador).'
 
     ######################################################################################
     #### DE AQUI EN ADELANTE VOY A IR PROBANDO Y PROGRAMANDO DIFERENTES FUNCIONES ########
@@ -112,9 +132,9 @@ def handle_response(text: str) -> str:
 
     return '''Elige alguna de las siguientes opciones para ejecutar:
     (1) Valor de los activos chilenos hoy.
-    (2) Valor de un indicador los ultimos 30 dias.(En desarrollo)
-    (3) Valor de un indicador(es) para una fecha en especifico (posterior a 1980, excepto bitcoin) (En desarrollo)
-    (4) Valor del ultimo año de un indicador. (En desarrollo)
+    (2) Valor de un indicador los ultimos 30 dias.
+    (3) Valor de los indicador(es) para una fecha en especifico (posterior a 1980, excepto bitcoin) 
+    (4) Valor del ultimo año de un indicador. 
     Puedes consultar mas sobre las funciones en los comandos disponibles en el menú
     '''
 
@@ -154,9 +174,11 @@ if __name__ == '__main__':
     # COMMANDS
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('help', help_command))
-    app.add_handler(CommandHandler('custom', obtener_indicadores))
+    app.add_handler(CommandHandler('command3', obtener_indicadores))
     # Para añadir un nuevo comando a las respuestas del bot
-    app.add_handler(CommandHandler('valorXFecha', valorXFecha))
+    app.add_handler(CommandHandler('command4', valorXFecha))
+    app.add_handler(CommandHandler('command5', Ult30DIndicador))
+    app.add_handler(CommandHandler('command6', UltimoAnoIndicador))
 
     # MESSAGES
     app.add_handler(MessageHandler(filters.TEXT, handle_message))

@@ -20,6 +20,7 @@ import seaborn as sns
 import pandas as pd
 from datetime import datetime, timezone
 import matplotlib.pyplot as plt
+import tempfile
 
 indicadores = ["uf", "ivp", "dolar", "dolar_intercambio", "euro", "ipc",
                "utm", "imacec", "tpm", "libra_cobre", "tasa_desempleo", "bitcoin"]
@@ -138,14 +139,25 @@ def ultimoMesIndicador(indicador):
 
     # Generacion del grafico
     # Proceso de formateo del grafico
-    sns.lineplot(serie, x=serie['dia'].sort_values(), y=serie['valor'])
+    # sns.lineplot(serie, x=serie['dia'].sort_values(), y=serie['valor'])
     # Añadir luego las fechas que se consideran
+    plt.figure()
+    sns.lineplot(serie, x=serie['dia'].sort_values(), y=serie['valor'])
     plt.suptitle("Valor en " + unidad_medida + " de Ult. 30 Dias " + nombre)
     plt.ylabel("Valor en " + str(unidad_medida))
     plt.xlabel("Dia del mes")
-    # Se muestra el grafico
 
-    return plt.savefig(r'D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\foo.png')
+    # Se muestra el grafico
+    # Deberia guardar el grafico y escupir un string con la direccion de la imagen. luego esa imagen debo borrarla al otro lado.
+    path = r"D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\foo.png"
+    plt.savefig(path)
+    plt.close()
+
+    return path
+
+    #
+    # plt.savefig(
+    # r'D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\foo.png')
 
 
 # PUNTOS A CONSIDERAR PARA PROGRAMAR
@@ -188,7 +200,7 @@ def obtenerIndicadorxFecha(fecha, tipo_indicador):
                          "U$ "+str(obtenerIndicadorFecha(tipo_indicador, fecha)['serie'][0]['valor']) + " " + obtenerIndicadorFecha(tipo_indicador, fecha)['unidad_medida'])
 
 
-# # LA MISMA FUNCION PERO ITERABLE
+# # LA MISMA FUNCION PERO ITERABLE Y DEVUELVE UN STRING CONCATENADO PARA ENVIARLO COMO TEXTO PLANO O MENSAJE
 
 
 def obtenerIndicadoresXFecha(fecha):
@@ -271,14 +283,21 @@ def obtenerIndicadorXAño(año, tipo_indicador):
     # print(serie.sort_values('fecha'))
 
     # Generacion del grafico
+    plt.figure()
     sns.lineplot(serie, x=serie['fecha'], y=serie['valor'])
     # Formato de la visualizacion
     plt.suptitle("Valor en " + unidad_medida + " del Ult. año de " + nombre)
     plt.ylabel("Valor en " + str(unidad_medida))
     plt.xlabel("Año mes")
 
-    # # Se muestra el grafico
-    return plt.show()
+    # Se muestra el grafico
+    # return plt.savefig('D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\plot.png')
+    path = r"D:\Users\JuanIgnacio\Cursos_Online\Study Devs\01-Indicadores_chilenos\foo.png"
+    plt.savefig(path)
+    plt.close()
+
+    return path
+    # return plt.show()
 
 # Cosas que faltan formatear
 # Retornar la foto en el mensaje que vuelve hacia el telegram.
