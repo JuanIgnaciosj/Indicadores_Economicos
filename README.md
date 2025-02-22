@@ -1,5 +1,5 @@
 <div class="cat">
-   <img src='hhttps://imagepng.org/wp-content/uploads/2017/11/telegram-icone-icon.png' 
+   <img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
      width="30" 
      height="30">
 </div>
