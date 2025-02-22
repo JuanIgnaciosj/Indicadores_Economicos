@@ -1,5 +1,8 @@
 ___
-## **Implementación Bot Telegram Indicadores Chilenos**
+## **Implementación Bot Telegram Indicadores Chilenos** 
+   <img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
+     width="30" 
+     height="30">
 ESTE SCRIPT ES UNA IMPLEMENTACION SIMPLE DE LA API ALOJADA EN https://mindicador.cl/
 ____
 LA IMPLEMENTACION ACTUAL CONSISTE EN CONSULTAS SIMPLES QUE SERAN EJECUTADAS POR UN BOT DE TELEGRAM, EL BACK ESTA CONSTRUIDO SOBRE UN MISMO SCRIPT CON FUNCIONES EN PYTHON ALOJADAS EN ESTE MISMO REPO. **(EN DESARROLLO)**
