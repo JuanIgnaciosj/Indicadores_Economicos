@@ -79,10 +79,7 @@ cd indicadores-chile-api
 
 <hr>
 
-<h2><img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
-     width="30" 
-     height="30">
-<h1 align="center"> 🚀 Uso Rápido</h2>
+<h2>🚀 Uso Rápido</h2>
 
 <h3>🔹 Obtener todos los indicadores del día</h3>
 
@@ -92,3 +89,23 @@ from indicadores import indicadoresDiarios
 print(indicadoresDiarios())
 
 ____
+```
+
+<hr>
+
+<h2 align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"
+       width="30"
+       height="30"
+       style="vertical-align: middle; margin-right: 8px;">
+  Bot de Telegram en desarrollo
+</h2>
+
+<p align="center">
+  Este proyecto está siendo integrado con un bot de Telegram que permitirá consultar 
+  los indicadores económicos directamente desde la aplicación, además de enviar 
+  gráficos y reportes en tiempo real.
+</p>
+
+
+
