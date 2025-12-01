@@ -1,8 +1,5 @@
 ___
-<img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
-     width="30" 
-     height="30">
-<h1 align="center">📈 API Indicadores Económicos de Chile — Python Wrapper para mindicador.cl</h1>
+📈 API Indicadores Económicos de Chile — Python Wrapper para mindicador.cl</h1>
 
 <p align="center">
   <strong>Consulta indicadores económicos de Chile, genera gráficos y obtén datos por día, mes, año o fecha específica.</strong><br>
@@ -82,7 +79,10 @@ cd indicadores-chile-api
 
 <hr>
 
-<h2>🚀 Uso Rápido</h2>
+<h2><img src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg' 
+     width="30" 
+     height="30">
+<h1 align="center"> 🚀 Uso Rápido</h2>
 
 <h3>🔹 Obtener todos los indicadores del día</h3>
 
