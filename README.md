@@ -1,5 +1,5 @@
 ___
-📈 API Indicadores Económicos de Chile — Python Wrapper para mindicador.cl</h1>
+<h1 align="center">📈 API Indicadores Económicos de Chile — Python Wrapper para mindicador.cl</h1>
 
 <p align="center">
   <strong>Consulta indicadores económicos de Chile, genera gráficos y obtén datos por día, mes, año o fecha específica.</strong><br>
